@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhắn tin với giáo viên</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .cong{
+    text-align:center; padding:50px 20px;
+  }
+  .cong__vong{
+    width:88px; height:88px; border-radius:50%;
+    border:2px solid var(--ink); margin:0 auto 20px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:.7rem; color:var(--moss-deep);
+    position:relative;
+  }
+  .cong__vong::before{
+    content:""; position:absolute; inset:-6px;
+    border:1px dashed var(--moss-deep); border-radius:50%;
+    animation:xoay 6s linear infinite;
+  }
+  @keyframes xoay{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<script src="shared.js"></script>
+<script>SoTay.init('nhantin.html');</script>
+
+<main>
+  <p class="eyebrow">Cổng chuyển hướng liên lạc</p>
+  <h1 class="page-title">Nhắn tin</h1>
+  <p class="page-sub">Trang này không lưu tin nhắn — nó chỉ mở đúng nhóm liên lạc mà giáo viên đã thiết lập cho lớp.</p>
+
+  <div class="card cong">
+    <div class="cong__vong">→</div>
+    <p style="font-weight:600; margin:0 0 6px;">Đang mở nhóm liên lạc của lớp…</p>
+    <p class="footnote" id="linkHienThi"></p>
+    <a class="btn btn--accent" id="btnMoLai" style="margin-top:16px;">Mở lại nhóm liên lạc</a>
+  </div>
+</main>
+
+<script>
+  const link = SoTay.get(SoTay.KEYS.linkLienLac);
+  document.getElementById('linkHienThi').textContent = link;
+
+  function moLienLac(){
+    window.open(link, '_blank', 'noopener');
+  }
+  document.getElementById('btnMoLai').addEventListener('click', moLienLac);
+
+  // Tự động mở một lần khi vừa vào trang (trình duyệt có thể chặn popup tự động,
+  // khi đó học sinh bấm nút "Mở lại nhóm liên lạc" phía trên).
+  setTimeout(moLienLac, 300);
+</script>
+</body>
+</html>

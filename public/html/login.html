@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Đăng nhập</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div id="auth-view" class="screen center-screen active">
+  <div class="auth-card">
+    <button class="back-link" onclick="location.href='index.html'">← Quay lại chọn chế độ</button>
+    <div class="brandmark" style="margin-bottom:22px;"><div class="dot">E</div><span>Gia sư hỗ trợ học tập cho học sinh</span></div>
+    <div class="auth-tabs">
+      <button id="role-tab-teacher" class="tab-btn active" onclick="setRoleTab('teacher')">Giáo viên</button>
+      <button id="role-tab-student" class="tab-btn" onclick="setRoleTab('student')">Học sinh</button>
+    </div>
+
+    <div id="teacher-login-form">
+      <div class="form-row"><label>Email</label><input id="teacher-email" placeholder="lananh@truong.edu.vn"></div>
+      <div class="form-row"><label>Mật khẩu</label><input id="teacher-password" type="password" placeholder="••••••••"></div>
+      <button class="pill-btn auth-submit" onclick="submitAuth('teacher')">Đăng nhập →</button>
+      <p class="auth-foot">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+    </div>
+
+    <div id="student-login-form" class="hidden">
+      <div class="form-row"><label>Tên đăng nhập</label><input id="student-username" placeholder="minhnhat.8a2"></div>
+      <div class="form-row"><label>Mật khẩu</label><input id="student-password" type="password" placeholder="••••••••"></div>
+      <div class="form-row"><label>Mã lớp</label><input id="student-class-code" placeholder="8A2-2026"></div>
+      <button class="pill-btn auth-submit" onclick="submitAuth('student')">Đăng nhập →</button>
+      <p class="auth-foot">Chưa có tài khoản? Liên hệ giáo viên để được cấp tên đăng nhập và mật khẩu.</p>
+    </div>
+  </div>
+</div>
+
+<div id="app-topnav" class="topnav hidden">
+  <div class="topnav-row">
+    <div class="brandmark"><div class="dot">E</div><span>Gia sư hỗ trợ học tập</span></div>
+    <div style="display:flex;align-items:center;">
+      <div class="avatar-row" id="whoami"></div>
+      <button class="logout-btn" onclick="logout()">Đăng xuất</button>
+    </div>
+  </div>
+  <div class="section-nav hidden" id="teacher-section-nav">
+    <button class="nav-item active" data-tview="t-home" onclick="setTeacherView('t-home',this)">🏠 Trang chủ</button>
+    <button class="nav-item" data-tview="t-classes" onclick="setTeacherView('t-classes',this)">📋 Quản lý lớp học</button>
+    <button class="nav-item" data-tview="t-students" onclick="setTeacherView('t-students',this)">🧑‍🎓 Quản lý học sinh</button>
+    <button class="nav-item" data-tview="t-messages" onclick="setTeacherView('t-messages',this)">💬 Tin nhắn</button>
+    <button class="nav-item" data-tview="t-exam" onclick="setTeacherView('t-exam',this)">📝 Tạo đề thi</button>
+  </div>
+  <div class="section-nav hidden" id="student-section-nav">
+    <button class="nav-item active" data-sview="s-home" onclick="setStudentView('s-home',this)">🏠 Trang chủ</button>
+    <button class="nav-item" data-sview="s-lesson" onclick="setStudentView('s-lesson',this)">📘 Bài học</button>
+    <button class="nav-item" data-sview="s-placement" onclick="setStudentView('s-placement',this)">🧭 Kiểm tra năng lực</button>
+    <button class="nav-item" data-sview="s-chat" onclick="setStudentView('s-chat',this)">💬 Nhắn tin giáo viên</button>
+    <button class="nav-item" data-sview="s-stats" onclick="setStudentView('s-stats',this)">📊 Thống kê chủ đề sai</button>
+    <button class="nav-item" data-sview="s-profile" onclick="setStudentView('s-profile',this)">⚙️ Sửa đổi thông tin</button>
+  </div>
+</div>
+
+<div id="teacher" class="screen">
+  <div class="main">
+
+    <div id="t-home" class="tview">
+      <div class="topbar">
+        <div><h1 id="teacher-home-title">Chào mừng giáo viên 👋</h1><p>3 lớp học · 90 học sinh · 12 học sinh đang cần hỗ trợ hổng kiến thức</p></div>
+        <button class="pill-btn" onclick="setTeacherView('t-exam', document.querySelector('[data-tview=t-exam]'))">+ Tạo đề thi</button>
+      </div>
+      <div class="grid g4" style="margin-bottom:18px;">
+        <div class="card"><div class="metric-label">Lớp học</div><div class="metric-val">3</div><div class="metric-delta">đang giảng dạy</div></div>
+        <div class="card"><div class="metric-label">Học sinh</div><div class="metric-val">90</div><div class="metric-delta up">▲ 4 mới tuần này</div></div>
+        <div class="card"><div class="metric-label">Hổng kiến thức</div><div class="metric-val">12</div><div class="metric-delta down">cần học bù</div></div>
+        <div class="card"><div class="metric-label">Đề đã giao</div><div class="metric-val">7</div><div class="metric-delta">trong tháng này</div></div>
+      </div>
+      <div class="card">
+        <h3>Lớp học của bạn</h3>
+        <p class="hint">Bấm vào một lớp để xem chi tiết</p>
+        <div class="grid g3">
+          <div class="card rowlink" onclick="setTeacherView('t-classes', document.querySelector('[data-tview=t-classes]'))">
+            <span class="badge b-coral" style="margin-bottom:10px;">8 / 32 hổng kiến thức</span>
+            <h3>8A2 — Toán 8</h3><p class="hint">32 học sinh</p>
+          </div>
+          <div class="card rowlink" onclick="setTeacherView('t-classes', document.querySelector('[data-tview=t-classes]'))">
+            <span class="badge b-teal" style="margin-bottom:10px;">3 / 28 hổng kiến thức</span>
+            <h3>8A3 — Toán 8</h3><p class="hint">28 học sinh</p>
+          </div>
+          <div class="card rowlink" onclick="setTeacherView('t-classes', document.querySelector('[data-tview=t-classes]'))">
+            <span class="badge b-amber" style="margin-bottom:10px;">1 / 30 hổng kiến thức</span>
+            <h3>9A1 — Toán 9</h3><p class="hint">30 học sinh</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="t-classes" class="tview hidden">
+      <div class="topbar">
+        <div><h1>Quản lý lớp học</h1><p>Tạo lớp mới và theo dõi tổng quan từng lớp</p></div>
+        <button class="pill-btn" onclick="toggle('add-class-panel')">+ Thêm lớp học</button>
+      </div>
+      <div id="add-class-panel" class="card hidden" style="margin-bottom:18px;">
+        <h3>Thêm lớp học mới</h3>
+        <div class="grid g2">
+          <div class="form-row"><label>Tên lớp</label><input placeholder="VD: 8A4"></div>
+          <div class="form-row"><label>Khối / Môn học</label><input placeholder="VD: Toán 8"></div>
+        </div>
+        <button class="pill-btn">Tạo lớp</button>
+      </div>
+      <div class="grid g3">
+        <div class="card">
+          <span class="badge b-coral" style="margin-bottom:10px;">8 / 32 hổng kiến thức</span>
+          <h3>8A2 — Toán 8</h3><p class="hint">Mã lớp: <span class="mono">8A2-2026</span></p>
+          <button class="pill-btn ghost" style="width:100%;justify-content:center;" onclick="setTeacherView('t-students', document.querySelector('[data-tview=t-students]')); selectClass('8A2')">Xem học sinh →</button>
+        </div>
+        <div class="card">
+          <span class="badge b-teal" style="margin-bottom:10px;">3 / 28 hổng kiến thức</span>
+          <h3>8A3 — Toán 8</h3><p class="hint">Mã lớp: <span class="mono">8A3-2026</span></p>
+          <button class="pill-btn ghost" style="width:100%;justify-content:center;" onclick="setTeacherView('t-students', document.querySelector('[data-tview=t-students]')); selectClass('8A3')">Xem học sinh →</button>
+        </div>
+        <div class="card">
+          <span class="badge b-amber" style="margin-bottom:10px;">1 / 30 hổng kiến thức</span>
+          <h3>9A1 — Toán 9</h3><p class="hint">Mã lớp: <span class="mono">9A1-2026</span></p>
+          <button class="pill-btn ghost" style="width:100%;justify-content:center;" onclick="setTeacherView('t-students', document.querySelector('[data-tview=t-students]')); selectClass('9A1')">Xem học sinh →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="t-students" class="tview hidden">
+      <div class="topbar">
+        <div><h1>Quản lý học sinh</h1><p>Chọn lớp để xem và quản lý danh sách học sinh</p></div>
+        <button class="pill-btn" onclick="toggle('add-student-panel')">+ Thêm học sinh</button>
+      </div>
+
+      <div id="add-student-panel" class="card hidden" style="margin-bottom:18px;">
+        <h3>Thêm học sinh</h3>
+        <p class="hint">Hệ thống tự tạo tên đăng nhập và mật khẩu mặc định cho từng học sinh</p>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="setAddTab('csv',this)">Tải file CSV</button>
+          <button class="tab-btn" onclick="setAddTab('manual',this)">Nhập bằng tay</button>
+        </div>
+        <div id="add-csv">
+          <div class="dropzone">📄 Kéo thả file .csv vào đây, hoặc bấm để chọn file<br><span style="font-size:11.5px;">Cột yêu cầu: Họ và tên · Ngày sinh · Lớp</span></div>
+        </div>
+        <div id="add-manual" class="hidden">
+          <div class="grid g3">
+            <div class="form-row"><label>Họ và tên</label><input placeholder="Nguyễn Văn A"></div>
+            <div class="form-row"><label>Ngày sinh</label><input type="date"></div>
+            <div class="form-row"><label>Lớp</label><select><option>8A2</option><option>8A3</option><option>9A1</option></select></div>
+          </div>
+        </div>
+        <button class="pill-btn" style="margin-top:6px;">Tạo tài khoản học sinh</button>
+      </div>
+
+      <div class="card" style="margin-bottom:18px;">
+        <h3>Chọn lớp</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="class-chip active" data-class="8A2" onclick="selectClass('8A2')">8A2 — 32 học sinh</button>
+          <button class="class-chip" data-class="8A3" onclick="selectClass('8A3')">8A3 — 28 học sinh</button>
+          <button class="class-chip" data-class="9A1" onclick="selectClass('9A1')">9A1 — 30 học sinh</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Danh sách học sinh — lớp <span id="students-class-label">8A2</span></h3>
+        <p class="hint">Bấm vào một học sinh để xem thông tin chi tiết</p>
+        <table>
+          <tr><th>Tên học sinh</th><th>Ngày sinh</th><th>Lớp</th><th>Mã lớp</th><th>Tên đăng nhập</th><th>Mật khẩu mặc định</th></tr>
+          <tr class="rowlink" onclick="openStudentDetail('Minh Nhật','MN')"><td class="name-cell"><div class="mini-avatar">MN</div>Minh Nhật</td><td>14/03/2012</td><td>8A2</td><td class="mono">8A2-2026</td><td class="mono">minhnhat.8a2</td><td class="mono">Nhat14032012</td></tr>
+          <tr class="rowlink" onclick="openStudentDetail('Thu Hà','TH')"><td class="name-cell"><div class="mini-avatar">TH</div>Thu Hà</td><td>02/05/2012</td><td>8A2</td><td class="mono">8A2-2026</td><td class="mono">thuha.8a2</td><td class="mono">Ha02052012</td></tr>
+          <tr class="rowlink flag" onclick="openStudentDetail('Quốc Bảo','QB')"><td class="name-cell"><div class="mini-avatar">QB</div>Quốc Bảo</td><td>19/11/2011</td><td>8A2</td><td class="mono">8A2-2026</td><td class="mono">quocbao.8a2</td><td class="mono">Bao19112011</td></tr>
+          <tr class="rowlink flag" onclick="openStudentDetail('Thanh Phong','TP')"><td class="name-cell"><div class="mini-avatar">TP</div>Thanh Phong</td><td>07/01/2012</td><td>8A2</td><td class="mono">8A2-2026</td><td class="mono">thanhphong.8a2</td><td class="mono">Phong07012012</td></tr>
+          <tr class="rowlink" onclick="openStudentDetail('Khánh Linh','KL')"><td class="name-cell"><div class="mini-avatar">KL</div>Khánh Linh</td><td>30/08/2012</td><td>8A2</td><td class="mono">8A2-2026</td><td class="mono">khanhlinh.8a2</td><td class="mono">Linh30082012</td></tr>
+        </table>
+      </div>
+
+      <div id="student-detail-panel" class="hidden" style="margin-top:18px;">
+        <button class="back-link" onclick="document.getElementById('student-detail-panel').classList.add('hidden')">← Đóng chi tiết học sinh</button>
+        <div class="topbar">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div class="avatar" style="width:48px;height:48px;font-size:16px;" id="sd-avatar">MN</div>
+            <div><h1 style="margin-bottom:2px;" id="sd-name">Minh Nhật</h1><p>Lớp 8A2 · Sinh 14/03/2012 · Đăng nhập: <span class="mono">minhnhat.8a2</span></p></div>
+          </div>
+        </div>
+        <div class="grid g13">
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div class="card">
+              <h3>Điểm kiểm tra</h3>
+              <table>
+                <tr><th>Bài kiểm tra</th><th>Thời điểm</th><th>Điểm</th></tr>
+                <tr><td>Phương trình bậc nhất</td><td>12/07/2026</td><td>8.5</td></tr>
+                <tr><td>Hệ số & đơn thức</td><td>28/06/2026</td><td>7.8</td></tr>
+                <tr><td>Kiểm tra năng lực đầu năm</td><td>05/09/2025</td><td>6.9</td></tr>
+              </table>
+            </div>
+            <div class="card">
+              <h3>Học phần được giao</h3>
+              <table>
+                <tr><th>Học phần</th><th>Ngày giao</th><th>Hoàn thành</th></tr>
+                <tr><td>Phương trình bậc hai</td><td>10/07/2026</td><td>64%</td></tr>
+                <tr><td>Hệ phương trình bậc hai</td><td>10/07/2026</td><td>0%</td></tr>
+                <tr><td>Ôn tập chương 3</td><td>28/06/2026</td><td>100%</td></tr>
+              </table>
+            </div>
+            <div class="card">
+              <h3>Biểu đồ mức độ tiến bộ</h3>
+              <canvas id="progressChart" height="140"></canvas>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div class="card">
+              <h3>Quản lý tài khoản</h3>
+              <div class="form-row"><label>Tên đăng nhập</label><input value="minhnhat.8a2" readonly></div>
+              <div class="form-row"><label>Mật khẩu mặc định</label><input value="Nhat14032012" readonly></div>
+              <button class="pill-btn ghost" style="width:100%;justify-content:center;">Đặt lại mật khẩu</button>
+            </div>
+            <div class="card">
+              <h3>Ghi chú về học sinh</h3>
+              <textarea rows="5" placeholder="Ghi chú...">Tiếp thu tốt phần lý thuyết, cần luyện thêm bài tập ứng dụng thực tế.</textarea>
+              <button class="pill-btn" style="width:100%;justify-content:center;margin-top:10px;">Lưu ghi chú</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="t-messages" class="tview hidden">
+      <div class="topbar"><div><h1>Tin nhắn</h1><p>Trò chuyện trực tiếp với học sinh và phụ huynh</p></div></div>
+      <div class="grid g13">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <div class="avatar">MN</div>
+            <div><b style="font-size:14px;">Minh Nhật</b><div style="font-size:12px;color:var(--ink-faint);">Lớp 8A2</div></div>
+          </div>
+          <div class="chat-bubble chat-in">Em ơi, nhớ hoàn thành phần Vi-ét trước buổi kiểm tra thứ Hai nhé!</div>
+          <div class="chat-bubble chat-out">Dạ em cảm ơn cô, em sẽ học xong hôm nay ạ.</div>
+          <div class="chat-input-row"><input placeholder="Nhắn tin..."><button class="pill-btn">Gửi</button></div>
+        </div>
+        <div class="card">
+          <h3>Cuộc trò chuyện</h3>
+          <div class="chat-list">
+            <button class="chat-item active"><div class="mini-avatar">MN</div><div class="who"><b>Minh Nhật</b><span>Dạ em cảm ơn cô...</span></div></button>
+            <button class="chat-item"><div class="mini-avatar">TH</div><div class="who"><b>Thu Hà</b><span>Cô ơi bài kiểm tra...</span></div></button>
+            <button class="chat-item"><div class="mini-avatar">QB</div><div class="who"><b>Quốc Bảo</b><span>Con chưa hiểu phần...</span></div></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="t-exam" class="tview hidden">
+      <div class="topbar"><div><h1>Tạo đề thi</h1><p>Soạn đề trắc nghiệm hoặc tự luận rồi giao cho lớp</p></div></div>
+      <div class="grid g13">
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div class="card">
+            <h3>1. Loại đề thi</h3>
+            <div class="tabs">
+              <button class="tab-btn active" onclick="setExamType('mcq',this)">Trắc nghiệm</button>
+              <button class="tab-btn" onclick="setExamType('essay',this)">Tự luận</button>
+            </div>
+            <div class="form-row"><label>Tên đề thi</label><input placeholder="VD: Kiểm tra Phương trình bậc hai"></div>
+          </div>
+          <div class="card">
+            <h3>2. Câu hỏi</h3>
+            <div id="mcq-questions">
+              <div class="qcard">
+                <div class="qhead"><b style="font-size:13.5px;">Câu 1</b><button class="remove-q">✕</button></div>
+                <div class="form-row"><input placeholder="Nhập nội dung câu hỏi..."></div>
+                <div class="grid g2">
+                  <div class="form-row"><input placeholder="Đáp án A"></div>
+                  <div class="form-row"><input placeholder="Đáp án B"></div>
+                  <div class="form-row"><input placeholder="Đáp án C"></div>
+                  <div class="form-row"><input placeholder="Đáp án D"></div>
+                </div>
+              </div>
+              <div class="qcard">
+                <div class="qhead"><b style="font-size:13.5px;">Câu 2</b><button class="remove-q">✕</button></div>
+                <div class="form-row"><input placeholder="Nhập nội dung câu hỏi..."></div>
+                <div class="grid g2">
+                  <div class="form-row"><input placeholder="Đáp án A"></div>
+                  <div class="form-row"><input placeholder="Đáp án B"></div>
+                  <div class="form-row"><input placeholder="Đáp án C"></div>
+                  <div class="form-row"><input placeholder="Đáp án D"></div>
+                </div>
+              </div>
+            </div>
+            <div id="essay-questions" class="hidden">
+              <div class="qcard">
+                <div class="qhead"><b style="font-size:13.5px;">Câu 1</b><button class="remove-q">✕</button></div>
+                <textarea rows="3" placeholder="Nhập đề bài tự luận..."></textarea>
+              </div>
+            </div>
+            <button class="pill-btn ghost">+ Thêm câu hỏi</button>
+          </div>
+        </div>
+        <div class="card" style="height:fit-content;">
+          <h3>3. Giao cho lớp</h3>
+          <div class="form-row">
+            <label>Chọn lớp</label>
+            <select><option>8A2 — 32 học sinh</option><option>8A3 — 28 học sinh</option><option>9A1 — 30 học sinh</option></select>
+          </div>
+          <div class="form-row"><label>Thời gian làm bài</label><input placeholder="VD: 45 phút"></div>
+          <div class="form-row"><label>Mở đề lúc</label><input type="datetime-local"></div>
+          <button class="pill-btn" style="width:100%;justify-content:center;" onclick="exportExam()">Xuất đề →</button>
+          <p class="hint" style="margin-top:10px;">Sau khi xuất, đề sẽ tự động chuyển đến tài khoản từng học sinh trong lớp.</p>
+          <p id="exam-exported" class="hidden" style="font-size:12.5px;font-weight:700;color:var(--teal);margin-top:6px;">✓ Đã giao đề đến 32 học sinh lớp 8A2</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="student" class="screen">
+  <div class="main">
+
+    <div id="s-home" class="sview">
+      <div class="topbar">
+        <div><h1>Chào buổi sáng, Nhật 👋</h1><p>Bạn đã học 5/7 ngày trong tuần này — giữ vững phong độ nhé.</p></div>
+        <button class="pill-btn">Tiếp tục học →</button>
+      </div>
+      <div class="grid g13">
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div class="card">
+            <h3>Chuỗi học trong tuần</h3>
+            <p class="hint">Học liên tục để duy trì chuỗi thành tích</p>
+            <div class="streak-row">
+              <div class="streak-day"><div class="lbl">T2</div><div class="streak-dot done">✓</div></div>
+              <div class="streak-day"><div class="lbl">T3</div><div class="streak-dot done">✓</div></div>
+              <div class="streak-day"><div class="lbl">T4</div><div class="streak-dot done">✓</div></div>
+              <div class="streak-day"><div class="lbl">T5</div><div class="streak-dot done">✓</div></div>
+              <div class="streak-day"><div class="lbl">T6</div><div class="streak-dot today">●</div></div>
+              <div class="streak-day"><div class="lbl">T7</div><div class="streak-dot">–</div></div>
+              <div class="streak-day"><div class="lbl">CN</div><div class="streak-dot">–</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Đang học: Phương trình bậc hai</h3>
+            <p class="hint">Chương 4 — Đại số 8</p>
+            <div class="progress-track"><div class="progress-fill" style="width:64%"></div></div>
+            <p style="font-size:12.5px;color:var(--ink-faint);margin:8px 0 0;">Đã học được 64% học phần</p>
+          </div>
+          <div class="card">
+            <h3>Biểu đồ mức độ tiến bộ</h3>
+            <canvas id="studentHomeChart" height="130"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Bài kiểm tra sắp tới</h3>
+          <p class="hint">Giáo viên quyết định thời điểm kiểm tra</p>
+          <div style="background:var(--amber-glow);border-radius:var(--radius-md);padding:16px;">
+            <span class="badge b-amber">Mở lúc 14:00 — 20/07</span>
+            <p style="font-size:13px;margin:10px 0 0;">Kiểm tra: Phương trình bậc hai (30 câu · 45 phút)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s-lesson" class="sview hidden">
+      <div class="topbar"><div><h1>Bài học</h1><p>Toàn cảnh lộ trình học tập của bạn</p></div></div>
+      <div class="grid g2">
+        <div class="card">
+          <h3>Bài đang học</h3>
+          <p class="hint">Phương trình bậc hai — Đã học được 64%</p>
+          <div class="progress-track" style="margin-bottom:10px;"><div class="progress-fill" style="width:64%"></div></div>
+          <div class="lesson-row"><div class="lrow-ic" style="background:var(--teal-glow);">✓</div><div class="body"><b>Định nghĩa & dạng tổng quát</b><span>Hoàn thành</span></div></div>
+          <div class="lesson-row"><div class="lrow-ic" style="background:var(--teal-glow);">✓</div><div class="body"><b>Công thức nghiệm</b><span>Hoàn thành</span></div></div>
+          <div class="lesson-row"><div class="lrow-ic" style="background:var(--indigo-glow);">▶</div><div class="body"><b>Định lý Vi-ét</b><span>Đang học — 40%</span></div></div>
+        </div>
+        <div class="card">
+          <h3>Bài chưa học / chưa hoàn thành</h3>
+          <div class="lesson-row locked"><div class="lrow-ic" style="background:var(--line);">🔒</div><div class="body"><b>Hệ phương trình bậc hai</b><span>Chưa mở khoá</span></div></div>
+          <div class="lesson-row locked"><div class="lrow-ic" style="background:var(--line);">🔒</div><div class="body"><b>Bất phương trình bậc hai</b><span>Chưa mở khoá</span></div></div>
+          <div class="lesson-row locked"><div class="lrow-ic" style="background:var(--line);">🔒</div><div class="body"><b>Ứng dụng thực tế</b><span>Chưa mở khoá</span></div></div>
+          <div class="lesson-row"><div class="lrow-ic" style="background:var(--coral-glow);">↻</div><div class="body"><b>Ôn tập chương 3</b><span>Chưa hoàn thành — 55%</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s-placement" class="sview hidden">
+      <div class="topbar"><div><h1>Kiểm tra năng lực</h1><p>Đề do giáo viên cấp để đánh giá đúng trình độ của bạn</p></div></div>
+      <div class="card" style="max-width:520px;">
+        <h3>Đề kiểm tra năng lực — do cô Lan Anh giao</h3>
+        <p class="hint">45 câu hỏi trải đều các chương · thời gian làm bài 60 phút · giao ngày 15/07/2026</p>
+        <div class="badge b-teal" style="margin-bottom:16px;">Có thể bắt đầu bất cứ lúc nào</div>
+        <button class="pill-btn">Bắt đầu kiểm tra →</button>
+      </div>
+    </div>
+
+    <div id="s-chat" class="sview hidden">
+      <div class="topbar"><div><h1>Nhắn tin giáo viên</h1><p>Kết nối trực tiếp qua Zalo với cô Lan Anh</p></div></div>
+      <div class="card" style="max-width:480px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <div class="avatar">LA</div>
+          <div><b style="font-size:14px;">Cô Lan Anh</b><div style="font-size:12px;color:var(--ink-faint);">Đang hoạt động trên Zalo</div></div>
+        </div>
+        <div class="chat-bubble chat-in">Em ơi, nhớ hoàn thành phần Vi-ét trước buổi kiểm tra thứ Hai nhé!</div>
+        <div class="chat-bubble chat-out">Dạ em cảm ơn cô, em sẽ học xong hôm nay ạ.</div>
+        <button class="pill-btn" style="width:100%;justify-content:center;margin-top:8px;">Mở Zalo để nhắn tin →</button>
+      </div>
+    </div>
+
+    <div id="s-stats" class="sview hidden">
+      <div class="topbar"><div><h1>Thống kê các chủ đề còn sai</h1><p>Dựa trên kết quả các bài kiểm tra gần đây</p></div></div>
+      <div class="card" style="max-width:640px;">
+        <h3>Tỉ lệ sai theo chủ đề</h3>
+        <p class="hint">Ưu tiên ôn lại các chủ đề có tỉ lệ sai cao nhất</p>
+        <div class="stat-bar-row"><div class="lbl">Định lý Vi-ét</div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:58%"></div></div><div class="pct">58%</div></div>
+        <div class="stat-bar-row"><div class="lbl">Hệ phương trình</div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:44%"></div></div><div class="pct">44%</div></div>
+        <div class="stat-bar-row"><div class="lbl">Bất phương trình</div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:30%"></div></div><div class="pct">30%</div></div>
+        <div class="stat-bar-row"><div class="lbl">Đơn thức & đa thức</div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:15%"></div></div><div class="pct">15%</div></div>
+        <div class="stat-bar-row"><div class="lbl">Phương trình bậc nhất</div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:8%"></div></div><div class="pct">8%</div></div>
+      </div>
+    </div>
+
+    <div id="s-profile" class="sview hidden">
+      <div class="topbar"><div><h1>Sửa đổi thông tin</h1><p>Cập nhật thông tin cá nhân và mật khẩu</p></div></div>
+      <div class="card" style="max-width:440px;">
+        <div class="form-row"><label>Họ và tên</label><input value="Minh Nhật"></div>
+        <div class="form-row"><label>Ngày sinh</label><input type="date" value="2012-03-14"></div>
+        <div class="form-row"><label>Lớp</label><input value="8A2" readonly></div>
+        <div class="form-row"><label>Mật khẩu mới</label><input type="password" placeholder="Để trống nếu không đổi"></div>
+        <button class="pill-btn" style="width:100%;justify-content:center;">Lưu thay đổi</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script src="../js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lớp học của tôi</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .lich-thi{ display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+  .lich-thi__the{
+    border:1.5px solid var(--ink); border-radius:var(--radius);
+    padding:12px 16px; background:var(--paper-card); min-width:120px;
+    box-shadow:2px 2px 0 rgba(44,44,42,.08);
+  }
+  .lich-thi__ngay{ font-family:var(--font-mono); color:var(--accent); font-weight:700; font-size:1rem; }
+  .lich-thi__mon{ font-size:.85rem; margin-top:2px; }
+  .thanh-vien-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .thanh-vien-list span{
+    font-size:.85rem; border:1px solid var(--ink); border-radius:20px;
+    padding:6px 14px; background:var(--paper-card);
+  }
+  .thanh-vien-list span.em{ background:var(--accent-tint); border-color:var(--accent); font-weight:600; }
+  .noi-quy-list{ margin:10px 0 0; padding-left:18px; line-height:1.7; }
+  .noi-quy-list li::marker{ color:var(--accent); }
+
+  .form-taikhoan{ display:flex; flex-direction:column; gap:14px; max-width:420px; }
+  .form-taikhoan label{
+    display:flex; flex-direction:column; gap:6px;
+    font-family:var(--font-mono); font-size:.7rem; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--moss-deep); font-weight:600;
+  }
+  .form-taikhoan input, .form-taikhoan select{
+    font-family:var(--font-body); font-size:.95rem; color:var(--ink);
+    border:1.5px solid var(--ink); border-radius:var(--radius);
+    padding:10px 12px; background:var(--paper-card);
+  }
+  .form-taikhoan input:focus, .form-taikhoan select:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .thong-bao-luu{
+    font-family:var(--font-mono); font-size:.75rem; color:var(--moss-deep);
+    display:none; margin:0;
+  }
+  .thong-bao-luu.hien{ display:block; }
+</style>
+</head>
+<body>
+<script src="shared.js"></script>
+<script>SoTay.init('lophoc.html');</script>
+
+<main>
+  <p class="eyebrow">Bảng đấu tranh hạng</p>
+  <h1 class="page-title">Lớp học</h1>
+  <p class="page-sub" id="tieuDeTrang">Bảng xếp hạng, nội quy và lịch thi của lớp em, được đồng bộ theo thời gian thực từ máy chủ.</p>
+
+  <div class="card card--pinned">
+    <p class="card__label" id="tenLopSub">Bảng xếp hạng</p>
+    <table class="so-diem">
+      <thead><tr><th>#</th><th>Học sinh</th><th>Điểm gần nhất</th></tr></thead>
+      <tbody id="thanBangXepHang"></tbody>
+    </table>
+    <p class="footnote" id="capNhatLuc"></p>
+  </div>
+
+  <div class="card">
+    <p class="card__label" id="tenThanhVien">Thành viên lớp</p>
+    <div class="thanh-vien-list" id="dsThanhVien"></div>
+  </div>
+
+  <div class="card">
+    <p class="card__label" id="tenNoiQuy">Nội quy & thông báo của lớp</p>
+    <ul class="noi-quy-list" id="dsNoiQuy"></ul>
+  </div>
+
+  <div class="card">
+    <p class="card__label">Lịch sử bài kiểm tra của em</p>
+    <table class="so-diem">
+      <thead><tr><th>Thời gian</th><th>Điểm</th><th>Ghi chú</th></tr></thead>
+      <tbody id="thanLichSuKT"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <p class="card__label">Kỳ thi sắp tới</p>
+    <div class="lich-thi" id="danhSachLichThi"></div>
+  </div>
+
+  <div class="card">
+    <p class="card__label">Chỉnh sửa thông tin tài khoản</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+      <span class="tag tag--moss">🟢 Đang online</span>
+      <button type="button" class="btn btn--ghost btn--sm" id="btnDangXuat">Đăng xuất →</button>
+    </div>
+    <form class="form-taikhoan" id="formTaiKhoan">
+      <label>Họ và tên
+        <input type="text" id="oTen" required>
+      </label>
+      <label>Lớp
+        <select id="oLop"></select>
+      </label>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button type="submit" class="btn btn--accent">Lưu thay đổi</button>
+        <p class="thong-bao-luu" id="thongBaoLuu">✓ Đã lưu thông tin tài khoản.</p>
+      </div>
+    </form>
+  </div>
+</main>
+
+<script>
+const ten = SoTay.get(SoTay.KEYS.ten);
+const lopCuaEm = SoTay.get(SoTay.KEYS.lop);
+
+function napBangXepHang(){
+  document.getElementById('tenLopSub').textContent = `Bảng xếp hạng lớp ${lopCuaEm}`;
+  const bxh = SoTay.layBangXepHang(lopCuaEm).slice().sort((a,b) => b.diem - a.diem);
+  const tbody = document.getElementById('thanBangXepHang');
+  if (bxh.length === 0){
+    tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state">Chưa có dữ liệu điểm.</div></td></tr>`;
+  } else {
+    tbody.innerHTML = bxh.map((h,i) => `
+      <tr class="${h.ten === ten ? 'me' : ''}">
+        <td class="rank">${i+1}</td>
+        <td>${h.ten}${h.ten === ten ? ' (em)' : ''}</td>
+        <td>${h.diem}/10</td>
+      </tr>
+    `).join('');
+  }
+  document.getElementById('capNhatLuc').textContent = `Cập nhật lúc ${new Date().toLocaleTimeString('vi-VN')}`;
+
+  document.getElementById('tenThanhVien').textContent = `Thành viên lớp ${lopCuaEm}`;
+  const dsTV = document.getElementById('dsThanhVien');
+  dsTV.innerHTML = bxh.length === 0
+    ? `<div class="empty-state">Chưa có danh sách thành viên.</div>`
+    : bxh.map(h => `<span class="${h.ten === ten ? 'em' : ''}">${h.ten}</span>`).join('');
+
+  document.getElementById('tenNoiQuy').textContent = `Nội quy & thông báo lớp ${lopCuaEm}`;
+  const noiQuy = SoTay.layNoiQuy(lopCuaEm);
+  const dsNQ = document.getElementById('dsNoiQuy');
+  dsNQ.innerHTML = noiQuy.length === 0
+    ? `<li>Chưa có nội quy riêng cho lớp này.</li>`
+    : noiQuy.map(nq => `<li>${nq}</li>`).join('');
+}
+
+function napLichSuKiemTra(){
+  const ls = SoTay.getJSON(SoTay.KEYS.lichSuKiemTra, []);
+  const tbody = document.getElementById('thanLichSuKT');
+  if (ls.length === 0){
+    tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state">Em chưa làm bài kiểm tra nào.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = ls.slice().reverse().map(l => `
+    <tr>
+      <td>${new Date(l.thoiGian).toLocaleString('vi-VN')}</td>
+      <td>${l.diem}/10</td>
+      <td>${l.lyDo ? l.lyDo : 'Nộp bài bình thường'}</td>
+    </tr>
+  `).join('');
+}
+
+function napLichThi(){
+  const lich = SoTay.getJSON(SoTay.KEYS.lichThi, []);
+  const dsLich = document.getElementById('danhSachLichThi');
+  dsLich.innerHTML = lich.length === 0
+    ? `<div class="empty-state">Chưa có lịch thi mới.</div>`
+    : lich.map(l => `
+      <div class="lich-thi__the">
+        <div class="lich-thi__ngay">${l.ngay}</div>
+        <div class="lich-thi__mon">${l.mon}</div>
+      </div>
+    `).join('');
+}
+
+/* ---------- Chỉnh sửa thông tin tài khoản ---------- */
+function napFormTaiKhoan(){
+  const dsLop = SoTay.getJSON(SoTay.KEYS.dsLop, [lopCuaEm]);
+  const oTen = document.getElementById('oTen');
+  const oLop = document.getElementById('oLop');
+  oTen.value = ten;
+  oLop.innerHTML = dsLop.map(l => `<option value="${l}" ${l === lopCuaEm ? 'selected' : ''}>${l}</option>`).join('');
+}
+
+document.getElementById('formTaiKhoan').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const tenMoi = document.getElementById('oTen').value.trim();
+  const lopMoi = document.getElementById('oLop').value;
+  if (!tenMoi) return;
+
+  SoTay.capNhatThongTinHocSinh(tenMoi, lopMoi);
+
+  const thongBao = document.getElementById('thongBaoLuu');
+  thongBao.classList.add('hien');
+  setTimeout(() => { window.location.reload(); }, 700);
+});
+
+document.getElementById('btnDangXuat').addEventListener('click', () => {
+  window.location.href = 'index.html';
+});
+
+napBangXepHang();
+napLichSuKiemTra();
+napLichThi();
+napFormTaiKhoan();
+// Mô phỏng đồng bộ realtime: nạp lại mỗi khi tab được lấy nét (giáo viên có thể vừa cập nhật)
+window.addEventListener('focus', () => { napBangXepHang(); napLichSuKiemTra(); napLichThi(); });
+</script>
+</body>
+</html>
