@@ -26,7 +26,7 @@ function loginAs(role){
 }
 function logout(){
   document.getElementById('app-topnav').classList.add('hidden');
-  location.href='/';
+  location.href='index.html';
 }
 
 function setTeacherView(id, btn){

@@ -100,7 +100,7 @@ function applyUserSession(role, user){
 function logout(){
   localStorage.removeItem(SESSION_KEY);
   document.getElementById('app-topnav').classList.add('hidden');
-  location.href='/';
+  location.href='index.html';
 }
 
 window.addEventListener('DOMContentLoaded', () => {
