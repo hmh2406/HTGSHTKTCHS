@@ -8,9 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Cấu hình CORS
-app.use(cors({ 
-    origin: ['https://edutrack.pro.vn', 'eduvisionlib.io.vn', 'http://localhost:5500', 'http://127.0.0.1:5500'] 
-}));
+app.use(cors()); 
 
 // Cấu hình Middleware
 app.use(express.json({ limit: '2mb' }));
