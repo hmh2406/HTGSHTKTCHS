@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: edutrack-web # Thay bằng tên service của bạn trên Render nếu muốn
+    env: static
+    routes:
+      # Định tuyến tất cả các đường dẫn không tìm thấy file vật lý về lại trang chủ index.html
+      - src: /*
+        dest: /public/index.html
