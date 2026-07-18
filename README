@@ -1,0 +1,25 @@
+GIA SƯ HỖ TRỢ HỌC TẬP
+
+1. Tính năng chính :
+- Giao diện giáo viên / học sinh
+- Đăng ký / đăng nhập tài khoản
+- Quản lý lớp học, học sinh, ghi chú, kho tài liệu
+- Backend Express lưu dữ liệu bằng SQLite (`data/edutrack.sqlite`)
+- Đã cấu hình CORS và tự trả lời preflight `OPTIONS`, tránh lỗi 405 khi frontend ở cổng/domain khác.
+
+2. Cài đặt và chạy backend:
+- Mở terminal tại thư mục dự án
+- Chạy `npm install`
+- Chạy `npm start`
+- Mở `http://localhost:4000` trong trình duyệt
+
+Tài khoản mẫu: giáo viên `lananh@truong.edu.vn` / `123456`; học sinh
+`minhnhat.8a2` / `Nhat14032012` / mã lớp `8A2-2026`.
+
+3. Cấu trúc dự án:
+- `html/`: frontend HTML
+- `css/`: CSS style
+- `js/`: JavaScript frontend
+- `server.js`: backend Express API
+- `package.json`: cấu hình Node.js
+- `data/db.json`: dữ liệu mẫu lưu trữ
