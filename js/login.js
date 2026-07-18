@@ -72,8 +72,10 @@ async function submitAuth(role){
       location.replace('gv.html');
       return;
     }
-    applyUserSession(role, result.user);
-    showAuthNotice('Đăng nhập thành công. Chào mừng bạn trở lại!');
+    
+    sessionStorage.setItem('edutrack_login_notice', 'Đăng nhập thành công. Chào mừng bạn trở lại!');
+    location.replace('trangchu.html');
+    return;
   } catch(err){
     console.error(err);
     alert('Lỗi mạng, vui lòng thử lại');
