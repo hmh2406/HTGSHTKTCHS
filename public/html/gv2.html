@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sổ tay sư phạm — Giáo viên</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ---- bổ sung riêng cho trang giáo viên (kế thừa biến từ shared.css) ---- */
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  .row-actions{ display:flex; gap:8px; align-items:center; }
+  .icon-btn{
+    width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center;
+    border:1.5px solid var(--ink); border-radius:var(--radius); background:var(--paper-card);
+    cursor:pointer; font-size:.85rem; padding:0;
+  }
+  .icon-btn:hover{ background:rgba(143,168,155,.14); }
+  .icon-btn--danger:hover{ background:var(--accent-tint); border-color:var(--accent); color:var(--accent); }
+
+  .class-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
+  .class-tile{
+    background:var(--paper-card); border:1.5px solid var(--ink); border-radius:var(--radius);
+    padding:18px; cursor:pointer; box-shadow:3px 3px 0 rgba(44,44,42,.08);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .class-tile:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(44,44,42,.12); }
+  .class-tile h3{ font-family:var(--font-display); margin:0 0 4px; font-size:1.2rem; }
+  .class-tile .code{ font-family:var(--font-mono); font-size:.72rem; color:var(--moss-deep); }
+  .class-tile .stat-line{ margin-top:10px; font-size:.78rem; color:var(--ink-soft); }
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(44,44,42,.45); z-index:200;
+    display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal{
+    background:var(--paper-card); border:1.5px solid var(--ink); border-radius:var(--radius);
+    max-width:760px; width:100%; padding:26px 28px; box-shadow:5px 5px 0 rgba(44,44,42,.14);
+    position:relative;
+  }
+  .modal__close{
+    position:absolute; top:14px; right:16px; background:none; border:none; font-size:1.2rem;
+    cursor:pointer; color:var(--ink-soft); line-height:1;
+  }
+  .modal__close:hover{ color:var(--accent); }
+
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-family:var(--font-mono); font-size:.7rem; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--moss-deep); margin-bottom:6px; }
+  .field input[type=text], .field input[type=password], .field input[type=file], .field textarea, .field select{
+    width:100%; font-family:var(--font-body); font-size:.9rem; padding:9px 11px;
+    border:1.5px solid var(--ink); border-radius:var(--radius); background:var(--paper); color:var(--ink);
+  }
+  .field textarea{ resize:vertical; min-height:70px; }
+
+  .subtabs{ display:flex; gap:6px; margin:18px 0 16px; border-bottom:1.5px solid var(--ink); }
+  .subtabs button{
+    font-family:var(--font-mono); font-size:.76rem; font-weight:600; padding:8px 14px;
+    border:none; background:none; color:var(--ink-soft); cursor:pointer; border-bottom:2px solid transparent;
+    transform:translateY(1.5px);
+  }
+  .subtabs button.active{ color:var(--accent); border-color:var(--accent); }
+
+  .item-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 14px; border:1px solid var(--grid-line-bold); border-radius:var(--radius);
+    background:var(--paper); margin-bottom:8px;
+  }
+  .item-row.locked{ opacity:.55; }
+  .item-row__main{ display:flex; align-items:center; gap:10px; }
+  .item-row__title{ font-weight:500; }
+  .item-row__meta{ font-family:var(--font-mono); font-size:.7rem; color:var(--moss-deep); }
+
+  .send-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--accent-tint); border:1px dashed var(--accent); border-radius:var(--radius);
+    padding:10px 14px; margin-top:14px;
+  }
+  .send-bar__count{ font-family:var(--font-mono); font-size:.78rem; color:var(--accent-dark); }
+
+  .checkbox-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin:10px 0; }
+  .checkbox-tile{
+    display:flex; align-items:center; gap:8px; padding:9px 12px; border:1.5px solid var(--ink);
+    border-radius:var(--radius); background:var(--paper); cursor:pointer; font-size:.85rem;
+  }
+  .checkbox-tile input{ accent-color:var(--accent); }
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); font-family:var(--font-mono); font-size:.8rem;
+    padding:11px 20px; border-radius:var(--radius); opacity:0; pointer-events:none; z-index:300;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<nav class="so-tay-nav">
+  <div class="so-tay-nav__top">
+    <div class="so-tay-nav__brand">Sổ tay sư phạm <small>Giáo viên</small></div>
+    <div class="so-tay-nav__student">Đang đăng nhập: <b id="teacherName">Cô Hương</b></div>
+  </div>
+  <ul class="so-tay-tabs">
+    <li><a href="#" data-tab="tong-quan" class="active"><span class="so-tay-tabs__num">01</span> Tổng quan</a></li>
+    <li><a href="#" data-tab="hoc-sinh"><span class="so-tay-tabs__num">02</span> Tài khoản học sinh</a></li>
+    <li><a href="#" data-tab="lop-hoc"><span class="so-tay-tabs__num">03</span> Lớp học</a></li>
+    <li><a href="#" data-tab="de-thi"><span class="so-tay-tabs__num">04</span> Ngân hàng đề thi</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- ===================== 01. TỔNG QUAN ===================== -->
+  <section id="tab-tong-quan" class="tab-panel active">
+    <p class="eyebrow">Tổng quan</p>
+    <h1 class="page-title">Chào cô giáo</h1>
+    <p class="page-sub">Quản lý học sinh, lớp học và đề kiểm tra từ một nơi.</p>
+    <div class="grid-2" id="overviewCards"></div>
+  </section>
+
+  <!-- ===================== 02. TÀI KHOẢN HỌC SINH ===================== -->
+  <section id="tab-hoc-sinh" class="tab-panel">
+    <p class="eyebrow">Tài khoản học sinh</p>
+    <h1 class="page-title">Danh sách học sinh</h1>
+    <p class="page-sub">Tên đăng nhập và mật khẩu dùng để học sinh đăng nhập vào trang học tập.</p>
+
+    <div class="card">
+      <button class="btn btn--accent" id="btnAddStudent">+ Thêm học sinh</button>
+      <div style="overflow-x:auto; margin-top:16px;">
+        <table class="so-diem" id="studentTable">
+          <thead>
+            <tr>
+              <th>Họ tên</th>
+              <th>Lớp</th>
+              <th>Tên đăng nhập</th>
+              <th>Mật khẩu</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 03. LỚP HỌC ===================== -->
+  <section id="tab-lop-hoc" class="tab-panel">
+    <div id="classListView">
+      <p class="eyebrow">Lớp học</p>
+      <h1 class="page-title">Các lớp đang dạy</h1>
+      <p class="page-sub">Chọn một lớp để tải video, chủ đề, và đề kiểm tra sắp tới.</p>
+      <div class="class-list" id="classList"></div>
+    </div>
+
+    <div id="classDetailView" style="display:none;">
+      <button class="btn btn--ghost btn--sm" id="btnBackToClasses">← Quay lại danh sách lớp</button>
+      <p class="eyebrow" style="margin-top:18px;">Lớp học</p>
+      <h1 class="page-title" id="classDetailName">—</h1>
+      <p class="page-sub" id="classDetailCode"></p>
+
+      <div class="subtabs">
+        <button data-subtab="video" class="active">Video bài giảng</button>
+        <button data-subtab="chude">Chủ đề</button>
+        <button data-subtab="kiemtra">Bài kiểm tra sắp tới</button>
+      </div>
+
+      <div id="subtab-video" class="tab-panel active">
+        <div class="card">
+          <p class="card__label">Tải video mới</p>
+          <div class="field"><label>Tên bài học</label><input type="text" id="newVideoTitle" placeholder="VD: Bài 4 — Phép cộng phân số"></div>
+          <div class="field"><label>Tệp video (hoặc đường dẫn)</label><input type="file" id="newVideoFile" accept="video/*"></div>
+          <button class="btn btn--accent" id="btnAddVideo">Tải lên</button>
+        </div>
+
+        <div class="card">
+          <p class="card__label">Danh sách video · chọn video để gửi cho học sinh</p>
+          <div id="videoItemList"></div>
+          <div class="send-bar">
+            <span class="send-bar__count" id="videoSelectCount">Chưa chọn video nào</span>
+            <button class="btn btn--sm" id="btnSendVideos">Gửi cho học sinh trong lớp</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="subtab-chude" class="tab-panel">
+        <div class="card">
+          <p class="card__label">Tạo chủ đề mới</p>
+          <div class="field"><label>Tên chủ đề</label><input type="text" id="newTopicTitle" placeholder="VD: Chương 2 — Số thập phân"></div>
+          <button class="btn btn--accent" id="btnAddTopic">Tạo chủ đề</button>
+        </div>
+        <div class="card">
+          <p class="card__label">Danh sách chủ đề · chọn để gửi cho học sinh</p>
+          <div id="topicItemList"></div>
+          <div class="send-bar">
+            <span class="send-bar__count" id="topicSelectCount">Chưa chọn chủ đề nào</span>
+            <button class="btn btn--sm" id="btnSendTopics">Gửi cho học sinh trong lớp</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="subtab-kiemtra" class="tab-panel">
+        <div class="card">
+          <p class="card__label">Bài kiểm tra đã gửi tới lớp này</p>
+          <div id="classTestList"></div>
+          <p class="footnote">Để tạo đề kiểm tra mới, sang mục <b>04 · Ngân hàng đề thi</b>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 04. ĐỀ THI ===================== -->
+  <section id="tab-de-thi" class="tab-panel">
+    <p class="eyebrow">Ngân hàng đề thi</p>
+    <h1 class="page-title">Tạo đề kiểm tra</h1>
+    <p class="page-sub">Cung cấp đề thi + đáp án, xác nhận, rồi chọn lớp làm bài. Đề sẽ gửi cho học sinh đang tham gia lớp đó.</p>
+
+    <div class="card">
+      <div class="field"><label>Tên bài kiểm tra</label><input type="text" id="testTitle" placeholder="VD: Kiểm tra Chương 2: Số thập phân"></div>
+      <div class="field"><label>Tệp đề thi (PDF/Word)</label><input type="file" id="testFile" accept=".pdf,.doc,.docx"></div>
+      <div class="field"><label>Đáp án trắc nghiệm (cách nhau bởi dấu phẩy, VD: A,C,B,D)</label><input type="text" id="testAnswers" placeholder="A,C,B,D,A"></div>
+      <button class="btn btn--accent" id="btnConfirmTest">Xác nhận đề thi</button>
+    </div>
+
+    <div class="card" id="testAssignCard" style="display:none;">
+      <p class="card__label">Chọn lớp làm bài kiểm tra này</p>
+      <p style="margin-top:0" id="pendingTestSummary"></p>
+      <div class="checkbox-grid" id="testClassCheckboxes"></div>
+      <button class="btn btn--accent" id="btnSendTest">Gửi đề cho các lớp đã chọn</button>
+    </div>
+
+    <div class="card">
+      <p class="card__label">Đề đã gửi</p>
+      <div id="testHistoryList"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop" id="studentModalBackdrop">
+  <div class="modal">
+    <button class="modal__close" id="studentModalClose">✕</button>
+    <p class="card__label" id="studentModalLabel">Thêm học sinh</p>
+    <div class="field"><label>Họ tên</label><input type="text" id="studentName"></div>
+    <div class="field"><label>Lớp</label><select id="studentClass"></select></div>
+    <div class="field"><label>Tên đăng nhập</label><input type="text" id="studentUsername"></div>
+    <div class="field"><label>Mật khẩu</label><input type="text" id="studentPassword"></div>
+    <button class="btn btn--accent btn--full" id="btnSaveStudent">Lưu</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="gv.js"></script>
+</body>
+</html>

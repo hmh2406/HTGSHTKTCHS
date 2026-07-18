@@ -1,7 +1,4 @@
 /* ============================================================
-
-
-
    SỔ TAY SƯ PHẠM — hệ thống thiết kế dùng chung
    Nền giấy ô ly, mực đỏ đất nung, mộc mạc.
    ============================================================ */
@@ -79,7 +76,7 @@ body::before{
 }
 .so-tay-nav__brand{
   font-family:var(--font-display);
-  font-weight:600; font-size:1.35rem; letter-spacing:.01em;
+  font-weight:700; font-size:clamp(1.9rem, 3.6vw, 2.5rem); letter-spacing:.01em;
   display:flex; align-items:baseline; gap:8px;
 }
 .so-tay-nav__brand small{
