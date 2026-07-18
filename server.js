@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors()); 
-app.use('/api', ...));
+
 app.use(express.json());
 const path = require('path');
 const fs = require('fs');
