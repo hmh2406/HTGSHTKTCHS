@@ -1,25 +1,217 @@
-GIA SƯ HỖ TRỢ HỌC TẬP
+Dưới đây là toàn bộ nội dung file tài liệu kỹ thuật và hướng dẫn (`README.md`) đã được biên chỉnh, cấu trúc lại và chuyển đổi hoàn chỉnh dựa trên các yêu cầu từ dự án **HTGSHTKTCHS (Hệ thống gia sư hỗ trợ kiến thức cho học sinh)**.
 
-1. Tính năng chính :
-- Giao diện giáo viên / học sinh
-- Đăng ký / đăng nhập tài khoản
-- Quản lý lớp học, học sinh, ghi chú, kho tài liệu
-- Backend Express lưu dữ liệu bằng SQLite (`data/edutrack.sqlite`)
-- Đã cấu hình CORS và tự trả lời preflight `OPTIONS`, tránh lỗi 405 khi frontend ở cổng/domain khác.
+Bản tài liệu này loại bỏ hoàn toàn các thành phần của dự án cũ (Firebase, Glass Morphism cũ, Chat, Tracker 120 phút...) và đồng bộ 100% sang kiến trúc mới sử dụng **LocalStorage / JSON Database**, giao diện **Notebook Style UI** cùng các quy tắc nghiêm ngặt về học tập (chống tua video, AI phát hiện lỗ hổng, chống gian lận thi cử).
 
-2. Cài đặt và chạy backend:
-- Mở terminal tại thư mục dự án
-- Chạy `npm install`
-- Chạy `npm start`
-- Mở `http://localhost:4000` trong trình duyệt
+---
 
-Tài khoản mẫu: giáo viên `lananh@truong.edu.vn` / `123456`; học sinh
-`minhnhat.8a2` / `Nhat14032012` / mã lớp `8A2-2026`.
+# 🎓 PHẦN MỀM GIA SƯ HỖ TRỢ HỌC TẬP CHO HỌC SINH (HTGSHTKTCHS)
 
-3. Cấu trúc dự án:
-- `html/`: frontend HTML
-- `css/`: CSS style
-- `js/`: JavaScript frontend
-- `server.js`: backend Express API
-- `package.json`: cấu hình Node.js
-- `data/db.json`: dữ liệu mẫu lưu trữ
+Nền tảng hỗ trợ học tập thông minh giúp giáo viên quản lý lớp học, giao bài học và bài kiểm tra; đồng thời hỗ trợ học sinh học tập theo lộ trình cá nhân hóa, phát hiện và khắc phục lỗ hổng kiến thức.
+
+---
+
+## ✨ Tính Năng Chính
+
+### 👨‍🏫 1. Dành cho Giáo viên
+
+* **Quản lý tài khoản:** Đăng ký, đăng nhập hệ thống và đăng xuất an toàn.
+* **Quản lý lớp học:** Tạo lớp học mới, cập nhật thông tin, quản lý mã lớp, danh sách lớp và theo dõi số lượng học sinh tham gia.
+* **Quản lý học sinh:** Thêm, sửa, xóa thông tin học sinh; theo dõi kết quả học tập và danh sách các học sinh đang bị hổng kiến thức.
+* **Quản lý đề thi:** Tạo đề kiểm tra trắc nghiệm, thiết lập đáp án đúng, giao bài cho từng lớp và theo dõi kết quả làm bài theo thời gian thực.
+* **Quản lý bài học:** Đăng tải video bài giảng, tài liệu học tập; sắp xếp bài học theo thứ tự và thiết lập lộ trình học tập, nội dung ôn tập.
+* **Liên lạc & Phối hợp:** Thiết lập nhanh các kênh liên lạc (Zalo, Messenger, Google Meet) và gửi thông báo trực tiếp đến toàn lớp.
+
+### 👨‍🎓 2. Dành cho Học sinh
+
+* **Đăng nhập & Tham gia:** Đăng nhập bằng tài khoản do giáo viên cấp, nhập mã lớp để vào lớp học và quản lý thông tin cá nhân.
+* **Trang chủ học tập:** Hiển thị chuỗi ngày học tập liên tục (Streak), tiến độ tổng quan, điểm kiểm tra gần nhất, thông báo mới và lịch thi.
+* **Bài tăng học nghiêm ngặt:** Học tập theo chuỗi video bài giảng bắt buộc. **Không được phép tua video**, bắt buộc phải xem hoàn thành 100% thời lượng mới được mở khóa bài tiếp theo.
+* **AI phát hiện lỗ hổng kiến thức:** Hệ thống tự động kiểm tra kiến thức ngay sau mỗi bài học. Nếu phát hiện phần yếu, AI sẽ yêu cầu học sinh xem lại đúng phân đoạn video tương ứng và làm lại bài; chỉ khi làm đúng mới được phép tiếp tục lộ trình.
+* **Kiểm tra trực tuyến chống gian lận:** Làm bài trong chế độ toàn màn hình có đồng hồ đếm ngược. Hệ thống tự động chấm điểm và lưu lịch sử.
+* **Bảng xếp hạng & Trao đổi:** Xếp hạng thi đua theo lớp, so sánh tiến độ với bạn bè và tích hợp lối tắt mở nhanh nhóm chat/nhận thông báo từ giáo viên.
+
+---
+
+## 🛡️ Các Cơ Chế & Quy Định Nghiêm Ngặt của Hệ thống
+
+> ⚠️ **Quy định khi học Video:**
+> * Phải xem theo đúng thứ tự tuyến tính, không học tắt, không bỏ qua nội dung.
+> * Hệ thống khóa chức năng tua thanh tiến trình (seek bar).
+> * Xem hết 100% thời lượng video mới kích hoạt trạng thái mở khóa bài tiếp theo.
+> 
+> 
+
+> ⚠️ **Quy định khi làm bài AI kiểm tra kiến thức nền:**
+> * Phải trả lời đúng toàn bộ câu hỏi kiểm tra nhanh của bài học.
+> * Làm sai sẽ bị đánh dấu "Hổng kiến thức" và hệ thống tự động điều hướng, yêu cầu học lại phần lý thuyết liên quan.
+> 
+> 
+
+> 🚨 **Quy định chống gian lận khi làm bài kiểm tra:**
+> * Bắt buộc chạy ở chế độ **Toàn màn hình (Fullscreen)**.
+> * Hệ thống liên tục lắng nghe sự kiện: Chuyển tab, thoát chế độ Fullscreen hoặc thu nhỏ trình duyệt.
+> * **Hình phạt vi phạm:** Hệ thống tự động khóa bài thi ngay lập tức, chấm **0 điểm** và gửi cảnh báo vi phạm về bảng điều khiển của giáo viên.
+> 
+> 
+
+---
+
+## 🛠️ Tech Stack
+
+* **Frontend:** HTML5, CSS3, JavaScript (ES6 Modules)
+* **UI/UX Style:** Notebook Style UI (Giao diện sổ tay học tập), Glass Card, Mobile Friendly.
+* **Data Storage:** LocalStorage (Lưu trữ cục bộ ở client) kết hợp cấu trúc tệp dữ liệu tập trung dạng **JSON Database**.
+* **Deployment:** Static Hosting (Live Server, Python HTTP Server, Node.js serve).
+
+---
+
+## 📁 Cấu Trúc Dự Án
+
+```
+Gia-su-ho-tro-hoc-tap/
+│
+├── index.html                  # Trang chọn vai trò (Giáo viên / Học sinh)
+├── login.html                  # Trang đăng nhập chung
+├── register.html               # Trang đăng ký tài khoản dành cho giáo viên
+├── gv.html                     # Giao diện tổng hợp của giáo viên
+│
+├── trangchu.html               # Trang chủ tổng quan của học sinh
+├── baitanghoc.html             # Khu vực học video và làm bài tập AI
+├── kiemtra.html                # Trình làm bài kiểm tra trực tuyến (Chống gian lận)
+├── lophoc.html                 # Quản lý lớp học / Danh sách lớp
+├── nhantin.html                # Giao diện lối tắt nhắn tin và thông báo
+│
+├── css/
+│   ├── style.css               # Định dạng chung và các biến màu sắc cơ bản
+│   ├── shared.css              # Thư viện thành phần dùng chung (Buttons, Cards, Forms)
+│   ├── gv.css                  # Giao diện riêng cho các chức năng giáo viên
+│   └── hs.css                  # Giao diện phong cách Notebook Style cho học sinh
+│
+├── js/
+│   └── shared.js               # Logic điều hướng, xử lý LocalStorage và phân quyền
+│
+├── db.json                     # Cấu trúc sơ đồ cơ sở dữ liệu mô phỏng
+│
+└── assets/
+    ├── video/                  # Lưu trữ video bài giảng ôn tập
+    ├── documents/              # Tài liệu học tập PDF/Word đính kèm
+    └── images/                 # Hình ảnh minh họa, logo ứng dụng
+
+```
+
+---
+
+## 📊 Kiến Trúc Dữ Liệu (db.json & LocalStorage)
+
+Hệ thống lưu trữ và đồng bộ trạng thái thông qua mô hình dữ liệu có cấu trúc như sau:
+
+```json
+{
+  "users": [
+    {
+      "id": "gv_01",
+      "username": "teacherA",
+      "role": "teacher",
+      "classes": ["class_math10"]
+    },
+    {
+      "id": "hs_01",
+      "username": "studentB",
+      "role": "student",
+      "classCode": "class_math10",
+      "streak": 5,
+      "weaknesses": ["Hàm số bậc hai"],
+      "progress": {
+        "video_01": "completed",
+        "video_02": "in_progress"
+      }
+    }
+  ],
+  "classes": [
+    {
+      "id": "class_math10",
+      "className": "Toán Đại Số 10",
+      "teacherId": "gv_01",
+      "meetLink": "https://meet.google.com/abc-xyz"
+    }
+  ]
+}
+
+```
+
+---
+
+## 🚀 Hướng Dẫn Cài Đặt và Khởi Chạy
+
+### 1. Tải dự án về máy
+
+```bash
+git clone <repository-url>
+cd Gia-su-ho-tro-hoc-tap
+
+```
+
+### 2. Khởi chạy ứng dụng
+
+Do hệ thống sử dụng ES6 Modules để phân tách mã nguồn sạch, bạn cần chạy ứng dụng qua môi trường máy chủ (HTTP Server) để tránh lỗi CORS:
+
+* **Cách 1: Sử dụng VS Code Live Server (Khuyến nghị)**
+1. Cài đặt Extension **Live Server** trên VS Code.
+2. Nhấp chuột phải vào tệp `index.html`.
+3. Chọn **Open with Live Server**.
+
+
+* **Cách 2: Sử dụng Python**
+```bash
+python -m http.server 8000
+
+```
+
+
+Sau đó truy cập đường dẫn: `http://localhost:8000`
+* **Cách 3: Sử dụng Node.js**
+```bash
+npx serve .
+
+```
+
+
+
+---
+
+## 🔄 Quy Trình Vận Hành Hệ Thống
+
+```
+[GIÁO VIÊN] Đăng ký ➔ Đăng nhập ➔ Tạo lớp học ➔ Thêm học sinh ➔ Đăng bài giảng/Đề thi ➔ Theo dõi lỗ hổng kiến thức
+                                                                                     │
+                                                                                     ▼
+[HỌC SINH]  Đăng nhập bằng Acc giáo viên cấp ➔ Vào lớp ➔ Xem video (Chống tua) ➔ Làm bài AI ➔ Thi trực tuyến ➔ Xem BXH
+
+```
+
+---
+
+## 🔧 Hướng Dẫn Xử Lý Sự Cố (Troubleshooting)
+
+| Sự cố | Nguyên nhân phổ biến | Cách khắc phục |
+| --- | --- | --- |
+| **Không đăng nhập được** | Sai thông tin hoặc tài khoản chưa được giáo viên khởi tạo trên hệ thống. | Kiểm tra lại danh sách tài khoản được cấp trong LocalStorage thông qua DevTools. |
+| **Không mở được video tiếp theo** | Video hiện tại chưa được xem đến giây cuối cùng (100% thời lượng). | Xem hết toàn bộ thời lượng video hiện tại, không cố tình tua nhanh. |
+| **Bị khóa bài kiểm tra và nhận điểm 0** | Trình duyệt ghi nhận hành động thoát Fullscreen, mở tab mới hoặc có ứng dụng khác đè lên màn hình. | Liên hệ giáo viên phụ trách để được xóa lịch sử vi phạm và cấp quyền làm lại bài thi. |
+| **Không thấy dữ liệu lớp học** | Mã lớp nhập vào chưa chính xác hoặc học sinh bị xóa khỏi danh sách lớp. | Yêu cầu giáo viên kiểm tra lại mã lớp trên giao diện `lophoc.html` của giáo viên. |
+
+---
+
+## 🚀 Định Hướng Phát Triển Tương Lai
+
+1. 🤖 Tích hợp AI hỗ trợ giải bài tập theo thời gian thực (Real-time AI Tutor Assistant).
+2. ☁️ Đồng bộ và di chuyển toàn bộ dữ liệu từ LocalStorage lên hệ quản trị cơ sở dữ liệu đám mây Firebase/Cloud Database.
+3. 📊 Xây dựng Dashboard thống kê nâng cao với các biểu đồ trực quan (Chart.js) phân tích chi tiết phổ điểm.
+4. 🔔 Phát triển hệ thống thông báo đẩy (Push Notifications) thời gian thực nhắc nhở lịch thi và chuỗi học tập (Streak).
+
+---
+
+**Phát triển bởi:** Nhóm phát triển : Người con xứ nghệ
+**Phiên bản:** 2.0.0
+**Bảo mật:** Phân quyền truy cập nghiêm ngặt - Dữ liệu cô lập theo lớp và vai trò người dùng.
+July 18th
