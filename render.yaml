@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: edutrack
-    env: static
-    routes:
-      # Tự động redirect 301 từ đường dẫn cũ sang đường dẫn mới
-      - src: /html/index.html
-        dest: /index.html
-        type: redirect
