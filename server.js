@@ -1,24 +1,31 @@
 const express = require('express');
-
-const cors = require('cors'); 
-
-const app = express();
-
-app.use(cors()); 
-
-app.use(express.json());
+const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
+
 const app = express();
-const cors = require('cors');
-app.use(cors({ origin: 'https://edutrack.pro.vn' }));
 const PORT = process.env.PORT || 4000;
+
+// Cấu hình CORS
+app.use(cors({ 
+    origin: ['https://edutrack.pro.vn', 'eduvisionlib.io.vn', 'http://localhost:5500', 'http://127.0.0.1:5500'] 
+}));
+
+// Cấu hình Middleware
+app.use(express.json({ limit: '2mb' }));
+app.use(express.static(path.join(__dirname, 'html')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+
+// Cấu hình Database
 const DATA_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'edutrack.sqlite');
 fs.mkdirSync(DATA_DIR, { recursive: true });
 const db = new Database(DB_FILE);
 db.pragma('foreign_keys = ON');
+
+// Tiếp tục các dòng db.exec(...) của bạn ở đây...
 
 // Must be registered before routes: browsers send OPTIONS before JSON requests.
 app.use(express.json({ limit: '2mb' }));
